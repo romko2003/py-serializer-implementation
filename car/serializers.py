@@ -10,8 +10,8 @@ from .models import Car
 
 _hp_field = Car._meta.get_field("horse_powers")
 _HP_MIN = next(
-    (v.limit_value for v in _hp_field.validators if isinstance(v,
-    MinValueValidator)),
+    (v.limit_value for v in _hp_field.validators if
+     isinstance(v, MinValueValidator)),
     None,
 )
 _HP_MAX = next(
