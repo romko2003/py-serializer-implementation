@@ -11,8 +11,8 @@ class CarSerializer(serializers.Serializer):
     horse_powers = serializers.IntegerField()
     is_broken = serializers.BooleanField()
     # може бути null і може бути відсутнім у вхідних даних
-    problem_description = serializers.CharField(allow_null=True,
-                                                required=False, allow_blank=True)
+    problem_description = serializers.CharField(
+        allow_null=True, required=False, allow_blank=True)
 
     def create(self, validated_data):
         car = Car(**validated_data)
