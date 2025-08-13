@@ -1,26 +1,30 @@
 # main.py
 import json
-from typing import Any
+from typing import Union
 
 from car.models import Car
 from car.serializers import CarSerializer
 
 
-def serialize_car_object(car: Car) -> str:
+def serialize_car_object(car: Car) -> bytes:
     """
-    Приймає об'єкт Car і повертає JSON-рядок з його даними.
+    Приймає Car і повертає JSON як bytes без
+    зайвих пробілів.
+    Має включати поле id.
     """
-    data = CarSerializer(car).data  # dict
-    return json.dumps(data)
+    data = CarSerializer(car).data
+    return json.dumps(data,
+                      separators=(",", ":")).encode("utf-8")
 
 
-def deserialize_car_object(payload: str) -> Car:
+def deserialize_car_object(payload: Union[str, bytes]) -> Car:
     """
-    Приймає JSON-рядок і повертає створений/валідований екземпляр Car.
-    Кидає rest_framework.exceptions.ValidationError при невалідних даних.
+    Приймає JSON (str або bytes) і повертає
+    створений екземпляр Car.
     """
-    data: Any = json.loads(payload)
-    serializer = CarSerializer(data=data)
-    serializer.is_valid(raise_exception=True)
-    car: Car = serializer.save()
-    return car
+    if isinstance(payload, (bytes, bytearray)):
+        payload = payload.decode("utf-8")
+    data = json.loads(payload)
+    ser = CarSerializer(data=data)
+    ser.is_valid(raise_exception=True)
+    return ser.save()

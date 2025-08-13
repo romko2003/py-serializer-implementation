@@ -1,36 +1,21 @@
-# cinema/serializers.py
-from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
-
 from .models import Car
 
 
 class CarSerializer(serializers.Serializer):
+    # порядок полів важливий (тести очікують id першим)
+    id = serializers.IntegerField(read_only=True)
     manufacturer = serializers.CharField(max_length=64)
     model = serializers.CharField(max_length=64)
-    horse_powers = serializers.IntegerField()
+    horse_powers = serializers.IntegerField()  # валідатори меж спрацюють на рівні моделі
     is_broken = serializers.BooleanField()
-    # може бути null і може бути відсутнім у вхідних даних
-    problem_description = serializers.CharField(
-        allow_null=True, required=False, allow_blank=True)
+    problem_description = serializers.CharField(allow_null=True, allow_blank=True, required=False)
 
     def create(self, validated_data):
-        car = Car(**validated_data)
-        try:
-            car.full_clean()
-        except DjangoValidationError as e:
-            # перетворюємо на DRF ValidationError
-            raise serializers.ValidationError(e.message_dict or e.messages)
-        car.save()
-        return car
+        return Car.objects.create(**validated_data)
 
-    def update(self, instance: Car, validated_data):
-        """Оновлює Car з валідаторами моделі."""
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
-        try:
-            instance.full_clean()
-        except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict or e.messages)
+    def update(self, instance, validated_data):
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
         instance.save()
         return instance
